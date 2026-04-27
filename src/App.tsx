@@ -37,18 +37,17 @@ const SYSTEM_INFO: Record<string, {course: string, description: string}> = {
   'Special Senses': { course: 'CHE 104 + CHE 202', description: 'Eyes, ears, nose and tongue for sensory perception' }
 }
 
-import QuizSettings from './components/QuizSettings'
-import QuizPanel from './components/QuizPanel'
-import QuizSummary from './components/QuizSummary'
+import QuizMode from './components/QuizMode'
+import { useQuizStore } from './store/useQuizStore'
 
 function App() {
   const controlsRef = useRef<OrbitControlsImpl>(null)
   
   const [gender, setGender] = useState<'male' | 'female'>('male')
 
-  const mode = useStore((state) => state.mode)
-  const setMode = useStore((state) => state.setMode)
-  const exitQuiz = useStore((state) => state.exitQuiz)
+  const quizActive = useQuizStore(state => state.quizActive)
+  const startQuizSetup = useQuizStore(state => state.startQuizSetup)
+  const exitQuiz = useQuizStore(state => state.exitQuiz)
 
   const activeSystems = useStore((state) => state.activeSystems)
   const toggleSystem = useStore((state) => state.toggleSystem)
@@ -147,15 +146,15 @@ function App() {
         </h1>
         
         <div className={`hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-2 bg-zinc-800/50 px-4 py-1.5 rounded-full border text-sm font-medium ${
-          mode === 'explorer' 
+          !quizActive 
             ? 'border-zinc-700/50 text-zinc-300' 
             : 'border-amber-500/50 text-amber-500 bg-amber-500/10'
         }`}>
-          {mode === 'explorer' ? 'Explorer Mode' : 'Quiz Mode'}
+          {!quizActive ? 'Explorer Mode' : 'Quiz Mode'}
         </div>
 
         <div className="flex items-center gap-2 md:gap-4">
-          {mode === 'explorer' && (
+          {!quizActive && (
             <div className="flex bg-[#111] rounded-lg p-1 border border-zinc-800 shadow-inner">
               <button onClick={() => setGender('male')} className={`flex items-center gap-1 md:gap-2 px-2 py-1 md:px-3 md:py-1.5 text-[10px] sm:text-xs md:text-sm font-bold rounded-md transition-colors ${gender === 'male' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
                 <span className="text-blue-400">♂</span> <span className="hidden sm:inline">Male</span>
@@ -166,9 +165,9 @@ function App() {
             </div>
           )}
 
-          {mode === 'explorer' ? (
+          {!quizActive ? (
             <button 
-              onClick={() => setMode('quiz_settings')}
+              onClick={startQuizSetup}
               className="bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-1.5 md:px-5 md:py-2 rounded-lg font-medium transition-colors border border-zinc-700 shadow-sm text-xs md:text-sm whitespace-nowrap"
             >
               Quiz Mode
@@ -188,7 +187,7 @@ function App() {
       <main id="canvas-container" className="flex-1 relative w-full h-[calc(100vh-64px)]">
         
         {/* Left Toggle Panel */}
-        {mode === 'explorer' && (
+        {!quizActive && (
           <div className="absolute top-2 left-2 md:top-4 md:left-4 w-[140px] sm:w-[180px] md:w-[280px] max-h-[calc(100%-1rem)] md:max-h-[calc(100%-2rem)] overflow-y-auto bg-[#0a0a0a]/80 backdrop-blur-md border border-zinc-800/80 rounded-xl p-2 md:p-4 shadow-2xl z-10 scrollbar-hide animate-in slide-in-from-left-4 fade-in duration-300">
             <h2 className="text-white font-semibold mb-2 md:mb-4 text-[10px] md:text-xs uppercase tracking-wider text-zinc-500">Body Systems</h2>
             <div className="space-y-1 md:space-y-1.5">
@@ -212,8 +211,8 @@ function App() {
           </div>
         )}
 
-        {/* Right UI: Explorer Controls OR Quiz Panel */}
-        {mode === 'explorer' ? (
+        {/* Right UI: Explorer Controls */}
+        {!quizActive && (
           <div className="absolute top-1/2 -translate-y-1/2 right-2 md:right-6 flex flex-col gap-3 md:gap-6 z-10 animate-in slide-in-from-right-4 fade-in duration-300 scale-75 md:scale-100 origin-right">
             <div className="flex flex-col items-center gap-2 bg-[#0a0a0a]/80 backdrop-blur-md border border-zinc-800/80 p-2 rounded-2xl shadow-xl">
               <button onClick={() => handleRotate('up')} className="w-10 h-10 flex items-center justify-center bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 rounded-full transition-colors border border-zinc-700/50">▲</button>
@@ -233,12 +232,10 @@ function App() {
               <button onClick={handleReset} className="w-10 h-10 flex items-center justify-center bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 text-xl font-medium rounded-full transition-colors border border-zinc-700/50">⟳</button>
             </div>
           </div>
-        ) : mode === 'quiz_active' && (
-          <QuizPanel />
         )}
 
         {/* Bottom Info Panel */}
-        {mode === 'explorer' && lastClickedSystem && (
+        {!quizActive && lastClickedSystem && (
           <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 w-[calc(100vw-2rem)] md:w-[550px] max-w-[90vw] bg-[#0a0a0a]/80 backdrop-blur-md border border-zinc-800/80 rounded-xl p-3 md:p-5 shadow-2xl z-10 text-center animate-in fade-in slide-in-from-bottom-4 duration-300">
             <div className="flex items-center justify-center gap-2 md:gap-3 mb-1 md:mb-2">
               <span className="text-base md:text-xl">{SYSTEM_EMOJIS[lastClickedSystem]}</span>
@@ -253,9 +250,8 @@ function App() {
           </div>
         )}
 
-        {/* Modal Overlays */}
-        {mode === 'quiz_settings' && <QuizSettings />}
-        {mode === 'quiz_summary' && <QuizSummary />}
+        {/* Quiz Mode Components */}
+        <QuizMode />
 
         <Canvas 
           camera={{ position: [0, 0, 4], fov: 45 }}

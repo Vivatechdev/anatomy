@@ -1,9 +1,10 @@
 import { useGLTF, Html } from '@react-three/drei'
-import { useRef, useLayoutEffect, useState, useEffect, useMemo } from 'react'
+import { useRef, useState, useEffect, useMemo } from 'react'
 import * as THREE from 'three'
 import type { ThreeEvent } from '@react-three/fiber'
 import { useStore, SYSTEMS } from '../store/useStore'
 import type { MeshInfo } from '../store/useStore'
+import { useQuizStore } from '../store/useQuizStore'
 
 export default function AnatomyModel() {
   const { scene } = useGLTF('/anatomy_complete.glb')
@@ -14,11 +15,11 @@ export default function AnatomyModel() {
   const setAvailableMeshes = useStore((state) => state.setAvailableMeshes)
   const [label, setLabel] = useState<{name: string, point: THREE.Vector3} | null>(null)
 
-  const mode = useStore(state => state.mode)
-  const quizSettings = useStore(state => state.quizSettings)
-  const quizState = useStore(state => state.quizState)
-
-  const currentQ = quizState.questions[quizState.currentIndex]
+  const quizActive = useQuizStore(state => state.quizActive)
+  const quizSettings = useQuizStore(state => state.quizSettings)
+  const currentQuestion = useQuizStore(state => state.currentQuestion)
+  const isAnswerRevealed = useQuizStore(state => state.isAnswerRevealed)
+  const selectedAnswer = useQuizStore(state => state.selectedAnswer)
 
   // Use memo to calculate scale and center exactly once based on the clean native scene
   const { scale, center } = useMemo(() => {
@@ -124,7 +125,7 @@ export default function AnatomyModel() {
 
   // Visibility toggle
   useEffect(() => {
-    const visibleSet = mode.startsWith('quiz') ? quizSettings.systems : activeSystems
+    const visibleSet = quizActive ? new Set(quizSettings.systems) : activeSystems
     
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
@@ -140,7 +141,7 @@ export default function AnatomyModel() {
         }
       }
     })
-  }, [scene, activeSystems, quizSettings.systems, mode])
+  }, [scene, activeSystems, quizSettings.systems, quizActive])
 
   // Quiz highlighting
   useEffect(() => {
@@ -155,37 +156,56 @@ export default function AnatomyModel() {
       }
     })
 
-    if (mode === 'quiz_active' && currentQ) {
+    if (quizActive && currentQuestion) {
+      const quizFeedback = !isAnswerRevealed ? 'pending' : (selectedAnswer === currentQuestion.correctAnswer ? 'correct' : 'incorrect')
+      
       scene.traverse((child) => {
         if ((child as THREE.Mesh).isMesh) {
           const m = child as THREE.Mesh
-          if (m.uuid === currentQ.targetUuid) {
-             m.userData.originalMaterial = m.material // Save reference
-             m.material = m.material.clone()
-             const sm = m.material as THREE.MeshStandardMaterial
-             
-             if (quizState.feedback === 'pending') {
+          
+          m.userData.originalMaterial = m.material // Save reference
+          
+          let targetMat: THREE.Material;
+          if (Array.isArray(m.material)) {
+            targetMat = m.material[0];
+          } else {
+            targetMat = m.material;
+          }
+          
+          m.material = targetMat.clone()
+          const sm = m.material as THREE.MeshStandardMaterial // Type casting for modification
+
+          if (m.uuid === currentQuestion.targetUuid) {
+             // Target mesh highlighting
+             if (quizFeedback === 'pending') {
                sm.color.set('#fbbf24') // Amber
                sm.emissive.set('#fbbf24')
-             } else if (quizState.feedback === 'correct') {
+             } else if (quizFeedback === 'correct') {
                sm.color.set('#22c55e') // Green
                sm.emissive.set('#22c55e')
-             } else if (quizState.feedback === 'incorrect') {
+             } else if (quizFeedback === 'incorrect') {
                sm.color.set('#ef4444') // Red
                sm.emissive.set('#ef4444')
              }
              sm.emissiveIntensity = 0.6
+             sm.opacity = 1.0
+             sm.transparent = false
+          } else {
+             // Other meshes dimming
+             sm.transparent = true
+             sm.opacity = 0.2
+             sm.emissiveIntensity = 0
           }
         }
       })
     }
-  }, [mode, currentQ?.targetUuid, quizState.feedback, scene])
+  }, [quizActive, currentQuestion?.targetUuid, isAnswerRevealed, selectedAnswer, scene])
 
   // Click handler
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation()
     // Disable standard labeling in quiz mode
-    if (mode !== 'explorer') return
+    if (quizActive) return
 
     const mesh = e.object as THREE.Mesh
     let name = mesh.name
@@ -217,7 +237,7 @@ export default function AnatomyModel() {
           <primitive object={scene} />
         </group>
       </group>
-      {label && mode === 'explorer' && (
+      {label && !quizActive && (
         <Html position={label.point} center>
           <div className="bg-black/80 text-white/90 px-3 py-1.5 rounded-lg text-sm whitespace-nowrap pointer-events-none border border-white/10 shadow-lg font-medium">
             {label.name}
