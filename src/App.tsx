@@ -263,7 +263,7 @@ function App() {
           <directionalLight position={[-10, 2, 5]} intensity={0.6} color="#dbeeff" />
           <directionalLight position={[0, 5, -10]} intensity={1.2} color="#ffffff" />
 
-          <EffectComposer disableNormalPass multisampling={0}>
+          <EffectComposer enableNormalPass={false} multisampling={0}>
             <N8AO distanceFalloff={1} aoRadius={1} intensity={4} halfRes />
           </EffectComposer>
 
