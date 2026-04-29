@@ -22,7 +22,7 @@ const SYSTEM_EMOJIS: Record<string, string> = {
   'Special Senses': '👁️'
 }
 
-const SYSTEM_INFO: Record<string, {course: string, description: string}> = {
+const SYSTEM_INFO: Record<string, { course: string, description: string }> = {
   'Skeletal': { course: 'CHE 104', description: 'Bones, cartilage, ligaments and joints supporting the body' },
   'Muscular': { course: 'CHE 104', description: 'Muscles enabling movement and posture' },
   'Cardiovascular': { course: 'CHE 103', description: 'Heart and blood vessels circulating blood' },
@@ -42,7 +42,7 @@ import { useQuizStore } from './store/useQuizStore'
 
 function App() {
   const controlsRef = useRef<OrbitControlsImpl>(null)
-  
+
   const [gender, setGender] = useState<'male' | 'female'>('male')
 
   const quizActive = useQuizStore(state => state.quizActive)
@@ -74,14 +74,14 @@ function App() {
     const object = controlsRef.current.object;
     const target = controlsRef.current.target;
     const vec = object.position.clone().sub(target);
-    
+
     const factor = dir === 'in' ? 0.8 : 1.25;
     vec.multiplyScalar(factor);
-    
+
     const dist = vec.length();
     if (dist < controlsRef.current.minDistance) vec.setLength(controlsRef.current.minDistance);
     if (dist > controlsRef.current.maxDistance) vec.setLength(controlsRef.current.maxDistance);
-    
+
     object.position.copy(target).add(vec);
     controlsRef.current.update();
   };
@@ -99,16 +99,16 @@ function App() {
       if (controlsRef.current) {
         e.stopPropagation();
         e.preventDefault();
-        
+
         const distance = controlsRef.current.object.position.distanceTo(controlsRef.current.target);
-        const panSpeed = distance * 0.001; 
-        
+        const panSpeed = distance * 0.001;
+
         const target = controlsRef.current.target;
         const object = controlsRef.current.object;
-        
+
         target.y -= e.deltaY * panSpeed;
         object.position.y -= e.deltaY * panSpeed;
-        
+
         const minY = -1.2;
         const maxY = 1.0;
         if (target.y < minY) {
@@ -141,15 +141,14 @@ function App() {
     <div className="w-screen h-screen flex flex-col bg-gradient-to-b from-[#050510] to-[#0a0a1a] overflow-hidden">
       {/* Navigation */}
       <nav className="h-16 flex-none bg-[#0a0a0a]/50 backdrop-blur border-b border-zinc-800/80 px-4 md:px-6 flex items-center justify-between shadow-md z-10 relative">
-        <h1 className="text-white font-bold text-xl md:text-2xl tracking-wide">
-          Viva Anatomy
+        <h1 className="text-white font-bold text-sm sm:text-base md:text-xl tracking-wide truncate max-w-[50%] md:max-w-none">
+          ABUJA College
         </h1>
-        
-        <div className={`hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-2 bg-zinc-800/50 px-4 py-1.5 rounded-full border text-sm font-medium ${
-          !quizActive 
-            ? 'border-zinc-700/50 text-zinc-300' 
+
+        <div className={`hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-2 bg-zinc-800/50 px-4 py-1.5 rounded-full border text-sm font-medium ${!quizActive
+            ? 'border-zinc-700/50 text-zinc-300'
             : 'border-amber-500/50 text-amber-500 bg-amber-500/10'
-        }`}>
+          }`}>
           {!quizActive ? 'Explorer Mode' : 'Quiz Mode'}
         </div>
 
@@ -166,14 +165,14 @@ function App() {
           )}
 
           {!quizActive ? (
-            <button 
+            <button
               onClick={startQuizSetup}
               className="bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-1.5 md:px-5 md:py-2 rounded-lg font-medium transition-colors border border-zinc-700 shadow-sm text-xs md:text-sm whitespace-nowrap"
             >
               Quiz Mode
             </button>
           ) : (
-            <button 
+            <button
               onClick={exitQuiz}
               className="bg-red-500/10 hover:bg-red-500/20 text-red-500 px-3 py-1.5 md:px-5 md:py-2 rounded-lg font-medium transition-colors border border-red-500/20 shadow-sm text-xs md:text-sm whitespace-nowrap"
             >
@@ -185,7 +184,7 @@ function App() {
 
       {/* 3D Viewer Canvas */}
       <main id="canvas-container" className="flex-1 relative w-full h-[calc(100vh-64px)]">
-        
+
         {/* Left Toggle Panel */}
         {!quizActive && (
           <div className="absolute top-2 left-2 md:top-4 md:left-4 w-[140px] sm:w-[180px] md:w-[280px] max-h-[calc(100%-1rem)] md:max-h-[calc(100%-2rem)] overflow-y-auto bg-[#0a0a0a]/80 backdrop-blur-md border border-zinc-800/80 rounded-xl p-2 md:p-4 shadow-2xl z-10 scrollbar-hide animate-in slide-in-from-left-4 fade-in duration-300">
@@ -194,9 +193,9 @@ function App() {
               {SYSTEMS.map(sys => {
                 const isActive = activeSystems.has(sys);
                 return (
-                  <button 
-                    key={sys} 
-                    onClick={() => toggleSystem(sys)} 
+                  <button
+                    key={sys}
+                    onClick={() => toggleSystem(sys)}
                     className={`w-full flex items-center justify-between px-2 py-1.5 md:px-3 md:py-2 rounded-lg text-[10px] sm:text-xs md:text-sm transition-colors border ${isActive ? 'bg-zinc-800/80 text-white border-zinc-700' : 'bg-transparent text-zinc-400 border-transparent hover:bg-zinc-900/50'}`}
                   >
                     <div className="flex items-center gap-1.5 md:gap-3">
@@ -253,7 +252,7 @@ function App() {
         {/* Quiz Mode Components */}
         <QuizMode />
 
-        <Canvas 
+        <Canvas
           camera={{ position: [0, 0, 4], fov: 45 }}
           className="w-full h-full cursor-grab active:cursor-grabbing"
           gl={{ antialias: true, alpha: false }}
@@ -262,16 +261,16 @@ function App() {
           <directionalLight position={[5, 10, 5]} intensity={1.5} color="#fff0dd" castShadow />
           <directionalLight position={[-10, 2, 5]} intensity={0.6} color="#dbeeff" />
           <directionalLight position={[0, 5, -10]} intensity={1.2} color="#ffffff" />
-          
+
           <EffectComposer>
-             <N8AO distanceFalloff={1} aoRadius={1} intensity={4} />
+            <N8AO distanceFalloff={1} aoRadius={1} intensity={4} />
           </EffectComposer>
 
           <Suspense fallback={<LoadingScreen />}>
             <AnatomyModel />
           </Suspense>
 
-          <OrbitControls 
+          <OrbitControls
             ref={controlsRef}
             makeDefault
             target={[0, 0, 0]}
