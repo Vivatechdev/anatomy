@@ -40,7 +40,7 @@ export const useStore = create<StoreState>((set) => ({
   availableMeshes: [],
   setAvailableMeshes: (meshes) => set({ availableMeshes: meshes }),
 
-  activeSystems: new Set(['Integumentary']),
+  activeSystems: new Set(['Skeletal']),
   toggleSystem: (sys) => set((state) => {
     const newActive = new Set(state.activeSystems)
     if (newActive.has(sys)) newActive.delete(sys)
