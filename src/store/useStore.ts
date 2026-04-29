@@ -35,7 +35,7 @@ interface StoreState {
   setLastClickedSystem: (sys: string | null) => void
 }
 
-export const useStore = create<StoreState>((set, get) => ({
+export const useStore = create<StoreState>((set) => ({
   
   availableMeshes: [],
   setAvailableMeshes: (meshes) => set({ availableMeshes: meshes }),

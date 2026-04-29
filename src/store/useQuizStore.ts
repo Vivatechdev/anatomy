@@ -111,8 +111,10 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
        let clean = "";
        // Try map first
-       if (anatomyNames[m.name]) {
+       if (anatomyNames[m.name] && anatomyNames[m.name] !== "Scene Collection") {
          clean = anatomyNames[m.name];
+       } else if (m.cleanName) {
+         clean = m.cleanName;
        } else {
          // Soft cleanup
          clean = m.name.replace(/^Fj/i, '').replace(/_/g, ' ').trim()

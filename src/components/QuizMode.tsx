@@ -44,7 +44,6 @@ export default function QuizMode() {
   const clearQuizError = useQuizStore(s => s.clearQuizError)
   const generateQuestionBank = useQuizStore(s => s.generateQuestionBank)
   const exitQuiz = useQuizStore(s => s.exitQuiz)
-  const restartQuiz = useQuizStore(s => s.restartQuiz)
 
   const availableMeshes = useStore(s => s.availableMeshes)
 
@@ -237,9 +236,12 @@ function ActiveQuizView() {
   }, [isAnswerRevealed, selectedAnswer, currentQuestion, nextQuestion, transitioning])
 
   if (transitioning) {
+    const isLastQuestion = currentQuestionIndex === questionBank.length - 1
     return (
       <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
-        <h2 className="text-3xl md:text-5xl font-black text-white bg-black/80 px-8 py-4 rounded-3xl backdrop-blur-md animate-pulse">Next Question...</h2>
+        <h2 className="text-3xl md:text-5xl font-black text-white bg-black/80 px-8 py-4 rounded-3xl backdrop-blur-md animate-pulse">
+          {isLastQuestion ? 'Calculating Results...' : 'Next Question...'}
+        </h2>
       </div>
     )
   }
