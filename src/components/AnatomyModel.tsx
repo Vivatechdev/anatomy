@@ -7,7 +7,7 @@ import type { MeshInfo } from '../store/useStore'
 import { useQuizStore } from '../store/useQuizStore'
 
 export default function AnatomyModel() {
-  const { scene } = useGLTF('/anatomy_complete.glb')
+  const { scene } = useGLTF('/anatomy_draco.glb')
   const modelRef = useRef<THREE.Group>(null)
   
   const activeSystems = useStore((state) => state.activeSystems)
@@ -248,4 +248,4 @@ export default function AnatomyModel() {
   )
 }
 
-useGLTF.preload('/anatomy_complete.glb')
+useGLTF.preload('/anatomy_draco.glb')
