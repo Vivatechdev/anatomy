@@ -255,15 +255,16 @@ function App() {
         <Canvas
           camera={{ position: [0, 0, 4], fov: 45 }}
           className="w-full h-full cursor-grab active:cursor-grabbing"
-          gl={{ antialias: true, alpha: false }}
+          gl={{ antialias: false, alpha: false, powerPreference: "high-performance", precision: "lowp" }}
+          dpr={[1, 1.5]}
         >
           <ambientLight intensity={0.1} />
           <directionalLight position={[5, 10, 5]} intensity={1.5} color="#fff0dd" castShadow />
           <directionalLight position={[-10, 2, 5]} intensity={0.6} color="#dbeeff" />
           <directionalLight position={[0, 5, -10]} intensity={1.2} color="#ffffff" />
 
-          <EffectComposer>
-            <N8AO distanceFalloff={1} aoRadius={1} intensity={4} />
+          <EffectComposer disableNormalPass multisampling={0}>
+            <N8AO distanceFalloff={1} aoRadius={1} intensity={4} halfRes />
           </EffectComposer>
 
           <Suspense fallback={<LoadingScreen />}>
